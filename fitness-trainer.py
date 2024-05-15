@@ -102,6 +102,7 @@ class Activity:
     def start_activity():
         # gets random activity
         if not Activity.activity_started:
+            Activity.predictions = []
             Activity.start_time = time.time()
             Activity.activity_started = True
 
@@ -110,25 +111,26 @@ class Activity:
         if Activity.activity_started and time.time() - Activity.start_time < ACTIVITIES[Activity.current_activity]['length']:
             # get sensor data
             if sensor.has_capability('accelerometer') and sensor.has_capability('gyroscope'):
-                acc_x = sensor.get_value('accelerometer')[0]
-                acc_y = sensor.get_value('accelerometer')[1]
-                acc_z = sensor.get_value('accelerometer')[2]
-                gyro_x = sensor.get_value('gyroscope')[0]
-                gyro_y = sensor.get_value('gyroscope')[1]
-                gyro_z = sensor.get_value('gyroscope')[2]
+                acc_x = sensor.get_value('accelerometer')['x']
+                acc_y = sensor.get_value('accelerometer')['y']
+                acc_z = sensor.get_value('accelerometer')['z']
+                gyro_x = sensor.get_value('gyroscope')['x']
+                gyro_y = sensor.get_value('gyroscope')['y']
+                gyro_z = sensor.get_value('gyroscope')['z']
 
                 predicted_activity = activity.predict_activity(acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z)
                 Activity.predictions.append(predicted_activity)
                 most_common = max(set(Activity.predictions), key = Activity.predictions.count)
-                if Activity.predictions.count(most_common) > 20:
+                print(most_common)
+                if len(Activity.predictions) > 20:
                     if most_common == 0:
-                        return "rowing"
+                        return "Rowing"
                     elif most_common == 1:
-                        return "lifting"
+                        return "Lifting"
                     elif most_common == 2:
-                        return "running"
+                        return "Running"
                     elif most_common == 3:
-                        return "jumpingjacks"
+                        return "Jumping Jacks"
                     else:
                         return "prediction failed"
         elif Activity.activity_started:
@@ -144,6 +146,13 @@ def on_draw():
     background.draw()
     if Activity.activity_started:
         captured_activity = Activity.capture_activity()
+        #print(captured_activity)
+        # depending on captured activity, show a text telling the user if he did the activity correctly
+        if captured_activity == Activity.current_activity:
+            pg.text.Label("Activity done correctly!", color=(0,0,0,255), x=WINDOW_WIDTH//2, y=50, anchor_x='center', anchor_y='center').draw()
+        else:
+            pg.text.Label("Activity done wrong!", color=(0,0,0,255), x=WINDOW_WIDTH//2, y=50, anchor_x='center', anchor_y='center').draw()
+
         # Use the modulus operator to alternate between the two sprites every 2 seconds
         sprite_index = int(time.time() % 2)
         time_left = int(ACTIVITIES[Activity.current_activity]['length'] - (time.time() - Activity.start_time))
@@ -153,6 +162,7 @@ def on_draw():
         ACTIVITIES[Activity.current_activity]["sprites"][sprite_index].draw()
         
     else:
+        Activity.predictions = []
         if not Activity.activity_selected:
             Activity.select_activity()
         time_left = int(COOLDOWN - (time.time() - Activity.cooldown))
