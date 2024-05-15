@@ -20,7 +20,7 @@ BUTTONS = [
 ]
 
 FONT_SIZE = 15
-ENTRY_COUNT = 5000
+ENTRY_COUNT = 1000
 
 INSTRUCTIONS = [pg.text.Label(f'Press a button on phone to start gathering data for a few seconds', font_size=FONT_SIZE, x=WIDTH//2, y=HEIGHT//2, anchor_x='center', anchor_y='center'),
             pg.text.Label('gathered data will be saved as a .csv file with ~1000 entries', font_size=FONT_SIZE, x=WIDTH//2, y=HEIGHT//2-(FONT_SIZE + 5), anchor_x='center', anchor_y='center'),
@@ -32,7 +32,7 @@ PORT = 5700
 sensor = SensorUDP(PORT)
 
 def map_button(name, button):
-    files = glob.glob('*.csv')
+    files = glob.glob('data/*.csv')
     # remove /r from name
     name = name.replace('\r', '')
     if button == 'button_1':
@@ -119,7 +119,7 @@ def on_draw():
                     data = start_gathering()
                     csv_file = map_button(instructionswindow.label.text, button)
                     print(csv_file)
-                    data.to_csv("data/" + csv_file)
+                    data.to_csv("data/" + csv_file, index_label='id')
                     gathering_started = False
         pg.text.Label('Press a button on phone to start gathering data for a few seconds', font_size=FONT_SIZE, x=WIDTH//2, y=HEIGHT//2, anchor_x='center', anchor_y='center').draw()
         pg.text.Label('gathered data will be saved as a .csv file with 1000 entries', font_size=FONT_SIZE, x=WIDTH//2, y=HEIGHT//2-(FONT_SIZE + 5), anchor_x='center', anchor_y='center').draw()
