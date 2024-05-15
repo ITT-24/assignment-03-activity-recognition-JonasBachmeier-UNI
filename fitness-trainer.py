@@ -81,6 +81,18 @@ ACTIVITIES = {
 }
 COOLDOWN = 11
 
+def activity_mapping(num):
+    if num == 0:
+        return "Rowing"
+    elif num == 1:
+        return "Lifting"
+    elif num == 2:
+        return "Running"
+    elif num == 3:
+        return "Jumping Jacks"
+    else:
+        return "Unknown"
+
 class Activity:
     activity_started = False
     cooldown = time.time()
@@ -121,18 +133,9 @@ class Activity:
                 predicted_activity = activity.predict_activity(acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z)
                 Activity.predictions.append(predicted_activity)
                 most_common = max(set(Activity.predictions), key = Activity.predictions.count)
-                print(most_common)
                 if len(Activity.predictions) > 20:
-                    if most_common == 0:
-                        return "Rowing"
-                    elif most_common == 1:
-                        return "Lifting"
-                    elif most_common == 2:
-                        return "Running"
-                    elif most_common == 3:
-                        return "Jumping Jacks"
-                    else:
-                        return "prediction failed"
+                    return most_common
+                
         elif Activity.activity_started:
             Activity.activity_selected = False
             Activity.activity_started = False
@@ -146,12 +149,12 @@ def on_draw():
     background.draw()
     if Activity.activity_started:
         captured_activity = Activity.capture_activity()
-        #print(captured_activity)
+        captured_activity = activity_mapping(captured_activity)
         # depending on captured activity, show a text telling the user if he did the activity correctly
         if captured_activity == Activity.current_activity:
-            pg.text.Label("Activity done correctly!", color=(0,0,0,255), x=WINDOW_WIDTH//2, y=50, anchor_x='center', anchor_y='center').draw()
+            pg.text.Label(f"Activity done correctly!", color=(0,0,0,255), x=WINDOW_WIDTH//2, y=50, anchor_x='center', anchor_y='center').draw()
         else:
-            pg.text.Label("Activity done wrong!", color=(0,0,0,255), x=WINDOW_WIDTH//2, y=50, anchor_x='center', anchor_y='center').draw()
+            pg.text.Label(f"Activity done wrong!", color=(0,0,0,255), x=WINDOW_WIDTH//2, y=50, anchor_x='center', anchor_y='center').draw()
 
         # Use the modulus operator to alternate between the two sprites every 2 seconds
         sprite_index = int(time.time() % 2)
