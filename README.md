@@ -3,3 +3,7 @@
 # Trainer
 
 I tried using the frequency to predict the correct exercise but i wasn't able to get it running correctly. The frequency was always 0.0Hz. My (bad) solution was to simply use the raw data for prediction.
+
+# Data used
+
+Due to problems with resampling i used the Data of Johannes for training my model.
