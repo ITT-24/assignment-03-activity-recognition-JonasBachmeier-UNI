@@ -1,11 +1,7 @@
 # this program recognizes activities
-import matplotlib
-from matplotlib import pyplot as plt
 from sklearn import svm
-import seaborn as sns # for nice visualizations
 import pandas as pd # for loading the data from csv
-import numpy as np
-from sklearn.preprocessing import scale, StandardScaler, MinMaxScaler, OrdinalEncoder
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 
 scaler = MinMaxScaler()
