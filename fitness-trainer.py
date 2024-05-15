@@ -52,19 +52,24 @@ class Activity:
         new_activity = random.choice(Activity.activities)
         print(new_activity.type)
         print(new_activity.length)
-        if not Activity.activity_started and time.time() - Activity.cooldown > 10 :
+        if not Activity.activity_started: #and time.time() - Activity.cooldown > 6 :
             # TODO: change prediction call method. At the moment this code stops the process until the proediction is complete, and therefore stops the game/trainer UI etc.
             print("Activity started")
             Activity.activity_started = True
-            Activity.cooldown = time.time()
             curr_act = activity.predict_activity(new_activity.length)
-            print("Activity predicted")
-            print(curr_act)
+            print("Predicted: " + curr_act)
+            Activity.cooldown = time.time()
             Activity.activity_started = False
         else:
             print("starting failed")
             print("cooldown left:" + str(time.time() - Activity.cooldown))
 
+# Call "start_activity" method every 5 seconds -> changes the boolean value of "activity_started" to True and the current activity enum
+# Every frame check if "activity_started" is True -> if True, draw the activity image and send the current sensor data to the activity recognizer.
+# The recognizer returns the predicted activity. If the predicted activity is the same as the current activity, the activity is successfully executed by the user and UI represents this.
+# only after the full activity is done, "activity_started" is set to False again and the next activity can be started.
+# This can be measured by anactivity lenght set for each activity. If the time since starting the activity is greater than the activity length, the activity is done and the "activity_started" is set to False again.
+# Here a final prediction summary can be shown to the user to tell him how well he did.
 
         
 for type, sprites in ACTIVITIES.items():
@@ -77,5 +82,5 @@ def on_draw():
 
 
 # Change time to correct training length later
-clock.schedule_interval(Activity.start_activity, 10)
+clock.schedule_interval(Activity.start_activity, 5)
 pg.app.run()

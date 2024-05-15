@@ -67,10 +67,17 @@ def train_model():
 
     # combine data
     data = pd.concat([rowing_full, lifting_full, running_full, jumpingjacks_full])
+    #drop id and timestamp
+    data = data.drop(columns=['id', 'id.1', 'timestamp'])
+    data = data.reset_index(drop=True)
 
     data['activity'] = OrdinalEncoder().fit_transform(data[['activity']])
 
-    data[['acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z']] = scaler.fit_transform(data[['acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z']])
+    # fit scaler to data
+    scaler.fit(data[['acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z']])
+
+    # scale data
+    data[['acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z']] = scaler.transform(data[['acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z']])
 
     x_train, x_test, y_train, y_test = train_test_split(data[['acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z']], data['activity'], test_size=0.2)
 
@@ -87,10 +94,18 @@ def predict_activity(length):
         #print(sensor.get_value('accelerometer'))
         # data is a single row, consisting of the accelerometer and gyroscope data
         currdata = pd.DataFrame(columns=['acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z'], data=[[sensor.get_value('accelerometer')['x'], sensor.get_value('accelerometer')['y'], sensor.get_value('accelerometer')['z'], sensor.get_value('gyroscope')['x'], sensor.get_value('gyroscope')['y'], sensor.get_value('gyroscope')['z']]])
-        #currdata[['acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z']] = scaler.fit_transform(currdata[['acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z']])
-        print(classifier.predict(currdata))
-        data.append(classifier.predict(currdata))
+        currdata[['acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z']] = scaler.transform(currdata[['acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z']])
+        #print(classifier.predict(currdata))
+        data.append(classifier.predict(currdata)[0])
     
     # return the most common prediction
-    print(data)
-    return data['activity'].mode()[0]
+    #print(data)
+    if max(set(data), key = data.count) == 0:
+        return 'rowing'
+    elif max(set(data), key = data.count) == 1:
+        return 'lifting'
+    elif max(set(data), key = data.count) == 2:
+        return 'running'
+    elif max(set(data), key = data.count) == 3:
+        return 'jumpingjacks'
+    return 'unknown'
