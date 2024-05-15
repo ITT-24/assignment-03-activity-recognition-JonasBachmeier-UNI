@@ -7,14 +7,9 @@ import pandas as pd # for loading the data from csv
 import numpy as np
 from sklearn.preprocessing import scale, StandardScaler, MinMaxScaler, OrdinalEncoder
 from sklearn.model_selection import train_test_split
-from DIPPID import SensorUDP
-import time
-
-
-PORT = 5700
-sensor = SensorUDP(PORT)
 
 scaler = MinMaxScaler()
+classifier = svm.SVC(kernel='rbf')
 
 
 def train_model():
@@ -81,31 +76,11 @@ def train_model():
 
     x_train, x_test, y_train, y_test = train_test_split(data[['acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z']], data['activity'], test_size=0.2)
 
-    classifier = svm.SVC(kernel='rbf')
-
     classifier.fit(x_train, y_train)
     return classifier
 
-def predict_activity(length):
-    classifier = train_model()
-    startup_time = time.time()
-    data = []
-    while time.time() - startup_time < length:
-        #print(sensor.get_value('accelerometer'))
-        # data is a single row, consisting of the accelerometer and gyroscope data
-        currdata = pd.DataFrame(columns=['acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z'], data=[[sensor.get_value('accelerometer')['x'], sensor.get_value('accelerometer')['y'], sensor.get_value('accelerometer')['z'], sensor.get_value('gyroscope')['x'], sensor.get_value('gyroscope')['y'], sensor.get_value('gyroscope')['z']]])
-        currdata[['acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z']] = scaler.transform(currdata[['acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z']])
-        #print(classifier.predict(currdata))
-        data.append(classifier.predict(currdata)[0])
-    
-    # return the most common prediction
-    #print(data)
-    if max(set(data), key = data.count) == 0:
-        return 'rowing'
-    elif max(set(data), key = data.count) == 1:
-        return 'lifting'
-    elif max(set(data), key = data.count) == 2:
-        return 'running'
-    elif max(set(data), key = data.count) == 3:
-        return 'jumpingjacks'
-    return 'unknown'
+def predict_activity(acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z):
+    currdata = pd.DataFrame(columns=['acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z'], data=[[sensor.get_value('accelerometer')['x'], sensor.get_value('accelerometer')['y'], sensor.get_value('accelerometer')['z'], sensor.get_value('gyroscope')['x'], sensor.get_value('gyroscope')['y'], sensor.get_value('gyroscope')['z']]])
+    currdata[['acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z']] = scaler.transform(currdata[['acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z']])
+
+    return classifier.predict(currdata)[0]
